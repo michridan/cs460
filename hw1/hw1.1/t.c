@@ -12,8 +12,11 @@ int gets(char *s)
 {
 	int i = 0;
 	char c = 0;
-	while(c = getc())
+	while((c = getc()) != '\r')
+	{
+		putc(c);
 		s[i++] = c;
+	}
 	s[i] = 0;
 	return i;
 }

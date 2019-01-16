@@ -33,8 +33,9 @@ int gets(char *s)
 	int i = 0;
 	char c;
 
-	while(c = getc())
+	while((c = getc()) != '\r')
 	{
+		putc(c);
 		s[i] = c;
 		i++;
 	}
