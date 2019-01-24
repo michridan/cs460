@@ -41,7 +41,6 @@ int sum;
 
 char *tab = "0123456789ABCDEF";
 
-#include <string.h>
 #include "uart.c"
 
 UART *up;
@@ -56,33 +55,20 @@ int main()
   N = 10;
 
   uart_init();
-  /*
+
   UART *up;
   for (i=0; i<4; i++)
   {
 		up = &uart[i];
 		uprints(up, "enter a line from this UART : ");
 		ugets(up, string);
-		uprints(up, "    ECHO : "); uprints(up, string); uprints(up, "\n\r");
+		fuprintf(up, "	ECHO : %s\n\r", string);
   }
-  */
-
-  up = &uart[0];
-  uprints(up, "Enter lines from UART terminal, enter quit to exit\n\r");
-  
-  while(1){
-    ugets(up, string);
-    uprints(up, "    ");
-    if (strcmp(string, "quit")==0)
-       break;
-    uprints(up, string);  uprints(up, "\n\r");
-  }
-
 
   uprints(up, "Compute sum of array\n\r");
   sum = 0;
   for (i=0; i<N; i++)
     sum += v[i];
-  uputc(up, (sum/10)+'0'); uputc(up, (sum%10)+'0');
+  fuprintf(up, "%d, %u", sum, sum);
   uprints(up, "\n\rEND OF RUN\n\r");
 }
