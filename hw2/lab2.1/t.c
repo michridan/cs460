@@ -19,10 +19,11 @@ typedef unsigned short u16;
 typedef unsigned int   u32;
 
 /*
-UART0 base address: 0x101f1000;
-UART1 base address: 0x101f2000;
-UART2 base address: 0x101f3000;
-UART3 base address: 0x10009000;
+UART0 base address: 0x10009000;
+UART1 base address: 0x1000A000;
+UART2 base address: 0x1000B000;
+UART3 base address: 0x1000C000;
+*/
 
 // flag register at 0x18
 //  7    6    5    4    3    2   1   0
@@ -32,7 +33,7 @@ UART3 base address: 0x10009000;
 // RX FULL : 0x40
 // RX empty: 0x10
 // BUSY=1 :  0x08
-*/
+
 
 int N;
 int v[] = {1,2,3,4,5,6,7,8,9,10};
@@ -40,7 +41,7 @@ int sum;
 
 char *tab = "0123456789ABCDEF";
 
-//#include "string.c"
+#include <string.h>
 #include "uart.c"
 
 UART *up;
@@ -55,6 +56,16 @@ int main()
   N = 10;
 
   uart_init();
+  /*
+  UART *up;
+  for (i=0; i<4; i++)
+  {
+		up = &uart[i];
+		uprints(up, "enter a line from this UART : ");
+		ugets(up, string);
+		uprints(up, "    ECHO : "); uprints(up, string); uprints(up, "\n\r");
+  }
+  */
 
   up = &uart[0];
   uprints(up, "Enter lines from UART terminal, enter quit to exit\n\r");

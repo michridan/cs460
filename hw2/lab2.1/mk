@@ -1,21 +1,21 @@
 #!/bin/bash
-$LIBPATH=/usr/lib/gcc/arm-none-eabi/6.3.1/
 # 1. What does the following statement do?
 #	- Assembles ts.s into ts.o, setting flags for debugging
 arm-none-eabi-as -mcpu=arm926ej-s -g ts.s -o ts.o
 
 # 2. What does the following statement do?
-#	- Compiles t.c into t.o w/ flags
+#	- Compiles t.c into t.o with debugging flags
 arm-none-eabi-gcc -c -mcpu=arm926ej-s -g t.c -o t.o
 
 # 3. What does the following statement do?
-#	- Links the files to create t.elf
+#	- Links the new object files to create t.elf
+
 #arm-none-eabi-ld -T t.ld ts.o t.o -o t.elf
 
-arm-none-eabi-ld -T t.ld -L $LIBPATH ts.o t.o -o t.elf -lgcc -lstr
+arm-none-eabi-ld -T t.ld -L /usr/lib/gcc/arm-none-eabi/6.3.1/libgcc.a ts.o t.o -o t.elf 
 
 # 4. What does the following statement do?
-#	- Creates a binary executable from t.elf
+#	- Copies t.elf into a binary executable format
 arm-none-eabi-objcopy -O binary t.elf t.bin
 
 rm *.o *.elf

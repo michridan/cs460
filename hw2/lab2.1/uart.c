@@ -32,10 +32,9 @@ int uart_init()
 
   for (i=0; i<4; i++){
     up = &uart[i];
-    up->base = (char *)(0x101F1000 + i*0x1000);
+    up->base = (char *)(0x10009000 + i*0x1000);
     up->n = i;
   }
-  uart[3].base = (char *)(0x10009000); // uart3 at 0x10009000
 }
 
 int ugetc(UART *up)
