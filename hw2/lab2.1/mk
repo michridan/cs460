@@ -10,9 +10,7 @@ arm-none-eabi-gcc -c -mcpu=arm926ej-s -g t.c -o t.o
 # 3. What does the following statement do?
 #	- Links the new object files to create t.elf
 
-#arm-none-eabi-ld -T t.ld ts.o t.o -o t.elf
-
-arm-none-eabi-ld -T t.ld -L /usr/lib/gcc/arm-none-eabi/6.3.1/libgcc.a ts.o t.o -o t.elf 
+arm-none-eabi-ld -T t.ld ts.o t.o -o t.elf
 
 # 4. What does the following statement do?
 #	- Copies t.elf into a binary executable format
