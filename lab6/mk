@@ -1,0 +1,2 @@
+#!/bin/bash
+cc -m32 -g main.c level_2.c OBJ/*.o

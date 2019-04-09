@@ -1,0 +1,101 @@
+Q1: With the modified KBD driver, P0 can NOT call kgetc().
+    EXPLAIN: WHY?
+    A: P0 will only be running when all other processes are asleep, so if it
+    were to sleep, it wouldn't be able to switch to another process. Therefore,
+    it can't be allowed to call kgetc().
+ 
+---------------- ANSWER QUESTIONS Q2, Q3, Q4 below ---------------------
+Given (1) to (6) in the ARM MTX code:
+
+(1). Vector tabble at memory address 0
+     0x18: LDR PC, irq_handler_addr
+     irq_handler_addr: .word irq_handler
+
+(2). irq_handler:
+       sub lr, lr, #4
+       stmfd sp!, {r0-r12, lr}
+       bl  IRQ_handler
+       ldmfd sp!, {r0-r12, pc}^
+
+(3). IRQ_handler{
+       if (VIC.statusRegBit32 && SIC.statusRefBit3)
+           kbd_handler();
+     }
+
+
+     int hasData = 0; // global flag set to 0 in kbd_init()
+     char c;          // global char shared by KBD driver and processes
+
+(4). kbd_handler()
+     {
+       get scancode;
+       c = ASCII char mapped by scancode;
+       hasData = 1;
+       wakeup(&hasData);
+     }
+      
+(5). char kgetc()
+     {    
+       if (hasData==0)
+          sleep(&hasData);
+       hasData = 0;        
+       return c;
+     }
+   
+(6). Process_Code()
+     {
+        unlock();    // allow CPU to accept IRQ interrupts
+        kgetc();     // Process P1 executes this line
+     } 
+============================================================================
+Q2: Draw a diagram to show the control flow of PROCESS P1 and the CPU 
+    (7).   Before any key is pressed
+    A:
+(6) ======================> (5) Reason: after unlock allows interrupts, kgetc() is called
+
+(5) at sleep(&hasData); ==> (P0) Reason: process sleeps to wait for data to come in
+
+    (8).   When a key is pressed.
+    A:
+(P0) =====================> (2) Reason: The IRQ exception forces P0 to drop what it was doing and handle the exception from the VICs
+
+(2) ======================> (3) Reason: irq_handler calls IRQ_handler after saving the previous register values.
+
+(3) ======================> (4) Reason: It recognises the signal as coming from a keyboard and calls the correct handler.
+
+(4) ======================> (3) Reason: handler gets the ascii character and calls wakeup(), then returns to IRQ_handler
+
+(3) ======================> (2) Reason: IRQ_handler returns to irq_handler
+
+(3) ======================> (P0) Reason: irq_handler returns P0 to its original state and resumes operation
+
+(P0) =====================> (5) at sleep(&hasData) Reason: P0 switches to P1 automatically, which then resumes operation in kgetc();
+
+(5) ======================> (6) Reason: kgetc resets hasData and returns c
+===========================================================================
+
+Assume: P0 forked P1 and P2, and switch to run P1 (with P2, P0 in readyQueue).
+When P1 tries to get a command line by
+        kgets(char line[ ]);     // which calls kgetc() until '\r'
+It would go to sleep on kgetc(), which switches to run P2, which also tries to
+get a command line. 
+
+(9). Verify that each process will get a complete input LINE rather than a 
+     different char of the same LINE.
+
+Q3: EXPLAIN: HOW and WHY does (9) work
+    A: When P2 tries to get a command after P1 sleeps, it will also try to sleep, switching over to P0.
+    When a key is pressed, wakeup() is called in the handler, which will wake up P1 and P2
+    and place them into the readyQueue. Once the handler returns, P0 will switch to the next value
+    in the readyQueue, which is P1. P1 will grab kp->data, and then fall asleep again to get new
+    input. Then it will switch to P2, which is in the middle of waiting for input. Since P1 took
+    the data, there is no data for it anymore, and it will fall back asleep. This process repeats
+    until a manual switch is called.
+
+ 
+Q4: Interrupt handlers can only call wakeup() but should NEVER call sleep().
+    EXPALIN: WHY?
+    A: This is because interrupt handlers disable the processing of other interrupts
+    during operation. If a handler called sleep(), there would be no way to wake it up,
+    stalling the program indefinitely.
+

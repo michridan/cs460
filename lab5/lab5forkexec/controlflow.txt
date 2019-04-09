@@ -1,0 +1,22 @@
+Draw a diagram to show the control flow of P1, which executes:
+
+     int pid = getpid();       in Umode space
+
+Required steps: YOU explain how each step leads to the next:
+			
+1. syscall(0,0,0,0) is called by getpid(). 			
+
+2. syscall saves the current registers in the stack and calls swi, which switches the process to SVC mode
+   and sends it to svc_entry
+
+3. The program enters SVC mode, which sends it to svc_entry in ts.s
+
+4. in svc_entry, the process is branched over to svc_handler
+
+5. svc_handler then calls the actual getpid and sets r to that value. it then returns r
+
+6. goUmode executes after svc_entry finishes, as it is the next line in ts.s.
+   It sets the value in stack register 0 to the value of r and then loads in 
+   the old registers.
+
+7. In the final command of goUmode, it loads the old registers and returns the pid to it's original address
