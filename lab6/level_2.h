@@ -23,3 +23,4 @@ void write_file();
 int mywrite(int fd, char buf[], int nbytes);
 int read_file();
 int mycat();
+int cp_file();

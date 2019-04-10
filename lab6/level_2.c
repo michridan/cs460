@@ -16,7 +16,7 @@ extern OFT oft[NOFT];
 
 int open_file(int mode)
 {
-    int i = 0, j = 0, success = 0;
+    int i = 0, j = 0, success = 0, idev;
     char temp[256], *bname, *dname;
     //gets ino for file to open
     strcpy(temp, pathname);
@@ -32,7 +32,12 @@ int open_file(int mode)
         printf("error: file %s not found\n", temp);
         return -1;
     }
-    MINODE * mip = iget(dev, ino);
+    if(pathname[0] == '/')
+        idev = root->dev;
+    else
+        idev = running->cwd->dev;
+        
+    MINODE * mip = iget(idev, ino);
     //ino = search(mip, bname);
 
     if(!S_ISREG(mip->INODE.i_mode))
@@ -497,7 +502,7 @@ int myread(int fd, char buf[], int nbytes)
         // if one data block is not enough, loop back to OUTER while for more ...
         }
     }
-    printf("myread: read %d char from file descriptor %d\n", count, fd);
+    printf("read: read %d char from file descriptor %d\n", count, fd);
     return count; // count is the actual number of bytes read
 }
 
@@ -506,14 +511,41 @@ int mycat()
 	int fd = open_file(0), n = 0, size = running->fd[fd]->minodePtr->INODE.i_size;
 	char buf[size + 1];
 
-	if(fd)
+	if(fd != -1)
 	{
 		n = myread(fd, buf, size);
 		buf[n] = 0;
-		printf(buf);
+		printf("%s\n", buf);
 	}
+    close_file(fd);
 
 	return n;
+}
+
+int cp_file()
+{
+    int fd_r, fd_w, n = 0, size;
+    fd_r = open_file(0);
+    strcpy(pathname, parameter);
+    fd_w = open_file(1);
+    if(fd_r == -1 || fd_w == -1)
+        return -1;
+    size = running->fd[fd_r]->minodePtr->INODE.i_size;
+    char buf[size + 1];
+
+    n = myread(fd_r, buf, size);
+    buf[n] = 0;
+    mywrite(fd_w, buf, n);
+
+    close_file(fd_r);
+    close_file(fd_w);
+    return n;
+}
+
+int mv_file()
+{
+    link();
+    unlink();
 }
 
 ///*** End level 2 functions ///***
