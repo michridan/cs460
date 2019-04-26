@@ -29,8 +29,16 @@ int open_file(int mode)
 	OFT *file = 0;
     if(!ino)
     {
-        printf("error: file %s not found\n", temp);
-        return -1;
+        if(mode == 1)
+        {
+            creat_file();
+            ino = getino(temp);
+        }
+        else
+        {
+            printf("error: file %s not found\n", temp);
+            return -1;
+        }
     }
     if(pathname[0] == '/')
         idev = root->dev;
